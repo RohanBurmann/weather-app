@@ -1,0 +1,17 @@
+.WeatherBlock {
+  width: 91px;
+  height: 190px;
+  background: linear-gradient(180deg, #40044F 0%, #08010A 91%, #08010A 91%, #060107 94%, black 100%);
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding: 0.25rem;
+  
+}
+
+.WeatherBlock img {
+  margin-bottom: 0.5rem;
+}
