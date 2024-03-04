@@ -76,22 +76,15 @@ const Weather = () => {
         {location} Hourly Weather Forecast
       </h1>
       <input type="text" value={location} onChange={handleLocationChange} />
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div className="forecast-container">
         {next4HoursData.map((hour, index) => (
           <div
             key={index}
-            style={{ display: "inline-block", width: "24%", margin: "1%" }}
+            className="forecast-box"
           >
-            <div className="WeatherBlock">
-              <p style={{ margin: 0 }}>
-                {moment
-                  .unix(hour.dt)
-                  .utcOffset(timezoneOffset * 60)
-                  .format("HH:mm")}
-              </p>
-              <WeatherIcon icon={hour.weather[0].icon} />
-              <p style={{ margin: 0 }}>{Math.round(hour.main.temp)}°C</p>
-            </div>
+            <p>{moment.unix(hour.dt).format("HH:mm")}</p>
+            <WeatherIcon icon={hour.weather[0].icon} />
+            <p>{Math.round(hour.main.temp)}°C</p>
           </div>
         ))}
       </div>
