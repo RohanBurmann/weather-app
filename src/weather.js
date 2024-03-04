@@ -15,13 +15,13 @@ const WeatherIcon = ({ icon }) => {
 const Weather = () => {
   const [weatherData, setWeatherData] = useState(null);
   const [location, setLocation] = useState('London'); // Default location
-  const [timezone, setTimezone] = useState(null); // Add timezone state
+  const [timezoneOffset, setTimezoneOffset] = useState(null); // Add timezone offset state
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=6917cc17b50462f572aaf55fd5ab64d1&units=metric`
+          `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(location)}&appid=6917cc17b50462f572aaf55fd5ab64d1&units=metric`
         );
         setWeatherData(response.data);
       } catch (error) {
@@ -30,34 +30,35 @@ const Weather = () => {
     };
 
     fetchData();
-  }, [location]); // Re-fetch data when location changes
+  }, [location, timezoneOffset]); // Re-fetch data when location or timezoneOffset changes
 
   useEffect(() => {
-    const fetchTimezone = async () => {
+    const fetchTimezoneOffset = async () => {
       try {
         const response = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=6917cc17b50462f572aaf55fd5ab64d1`
+          `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=6917cc17b50462f572aaf55fd5ab64d1`
         );
         console.log("Timezone response:", response); // Log response to check if timezone data is fetched
-        setTimezone(response.data.timezone);
+        setTimezoneOffset(response.data.timezone);
       } catch (error) {
-        console.error("Error fetching timezone:", error);
+        console.error("Error fetching timezone offset:", error);
       }
     };
 
-    fetchTimezone();
+    fetchTimezoneOffset();
   }, [location]);
 
-  if (!weatherData) {
+  if (!weatherData || timezoneOffset === null) {
     return <div>Loading...</div>;
   }
 
   const currentHour = new Date().getHours();
-  const next4HoursData = weatherData.list.filter((hour) => {
+  const next5HoursData = weatherData.list.filter((hour, index) => {
     if (!hour) return false; // Check if hour is undefined or null
-    const hourOfForecast = moment.unix(hour.dt).tz(`Europe/${timezone}`).hour(); // Adjust the timezone based on location
-    return hourOfForecast >= currentHour && hourOfForecast < currentHour + 4;
+    const hourOfForecast = moment.unix(hour.dt).add(timezoneOffset, 'seconds').hour(); // Adjust the timezone based on location
+    return hourOfForecast >= currentHour && index < 5; // Filter for the next 5 hours
   });
+
 
   const handleLocationChange = (event) => {
     setLocation(event.target.value);
@@ -65,13 +66,13 @@ const Weather = () => {
 
   return (
     <div>
-      <h1 style={{ textTransform: 'capitalize' }}>{location} Hourly Weather Forecast for the Next 4 Hours</h1>
+      <h1 style={{ textTransform: 'capitalize' }}>{location} Hourly Weather Forecast</h1>
       <input type="text" value={location} onChange={handleLocationChange} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        {next4HoursData.map((hour, index) => (
+        {next5HoursData.map((hour, index) => (
           <div key={index} style={{ display: 'inline-block', width: '24%', margin: '1%'}}>
-            <div className="WeatherBlock"> {}
-              <p style={{ margin: 0 }}>{moment.unix(hour.dt).tz(`Europe/${timezone}`).format('HH:mm')}</p>
+            <div className="WeatherBlock">
+              <p style={{ margin: 0 }}>{moment.unix(hour.dt).add(timezoneOffset, 'seconds').format('HH:mm')}</p>
               <WeatherIcon icon={hour.weather[0].icon} />
               <p style={{ margin: 0 }}>{Math.round(hour.main.temp)}°C</p>
             </div>
